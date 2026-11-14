@@ -1,9 +1,16 @@
+* {
+    box-sizing: border-box;
+}
+
 body{
     background-color: rgb(255, 229, 231);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 96px 20px 32px;
 }
 
 a{
@@ -15,25 +22,27 @@ a{
     background-color: rgb(255, 243, 244);
 
     position: fixed;
-    right: 3%;
-    top: 3%;
+    right: 24px;
+    top: 24px;
     
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    width: 30%;
-    padding: 0 4% 0 4%;
+    width: min(360px, calc(100vw - 40px));
+    padding: 0 24px;
     border-radius: 50px;
     border: 1px solid rgb(234, 211, 212);
 
-    font-sans: "Karla", ui-sans-serif, system-ui, sans-serif;
+    font-family: "Karla", ui-sans-serif, system-ui, sans-serif;
 
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 
 }
 
 .container{
+    margin-top: 20px;
+    width: min(100%, 820px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,11 +52,12 @@ a{
 
 .frases{
     background-color: rgb(255, 243, 244);
-    width: 70%;
+    width: 100%;
+    max-width: 700px;
 
-    border: 1px solidrgb(102, 91, 92);
+    border: 1px solid rgb(234, 211, 212);
     border-radius: 40px;
-    padding: 10%;
+    padding: clamp(28px, 6vw, 64px);
     margin-top: 3%;
 
     
@@ -57,7 +67,7 @@ a{
     align-items: center;
     text-align: center;
 
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 
     /* position: relative; */
 }
@@ -72,6 +82,8 @@ h2{
 
 .frase{
     font-family: "EB Garamond", ui-serif, Georgia, serif;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    line-height: 1.2;
 }
 
 .com-amor{
@@ -125,4 +137,32 @@ h2{
     font-size: 40px;
     left: 8%;
     top: 4.5%;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 80px 16px 24px;
+    }
+
+    .navbar {
+        top: 12px;
+        right: 16px;
+        width: calc(100vw - 32px);
+        padding: 0 20px;
+    }
+
+    .container {
+        margin-top: 8px;
+    }
+
+    .frases {
+        border-radius: 28px;
+        padding: 28px 22px;
+    }
+
+    .circulo {
+        width: 68px;
+        height: 68px;
+        top: -30px;
+    }
 }
