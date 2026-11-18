@@ -33,6 +33,70 @@ const loadHome = async () => {
     }
 };
 
+const setupPhotoCarousel = () => {
+    const image = document.querySelector("#foto-carousel");
+    if (!image) {
+        return;
+    }
+
+    const photos = Array.from({ length: 7 }, (_, index) => `/assets/foto${index + 1}.jpeg`);
+    const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hourCycle: "h23",
+    });
+    const firstPhotoDate = Date.UTC(2026, 10, 18);
+
+    photos.forEach((source) => {
+        const preload = new Image();
+        preload.src = source;
+    });
+
+    const getDateTime = () => Object.fromEntries(
+        dateTimeFormatter.formatToParts(new Date())
+            .filter(({ type }) => type !== "literal")
+            .map(({ type, value }) => [type, Number(value)]),
+    );
+
+    const updatePhotoForToday = () => {
+        const { year, month, day } = getDateTime();
+        const today = Date.UTC(year, month - 1, day);
+        const daysSinceFirstPhoto = Math.floor((today - firstPhotoDate) / 86_400_000);
+        const photoIndex = ((daysSinceFirstPhoto % photos.length) + photos.length) % photos.length;
+        const source = photos[photoIndex];
+
+        if (image.getAttribute("src") === source) {
+            return;
+        }
+
+        image.classList.add("is-changing");
+        window.setTimeout(() => {
+            image.src = source;
+            image.alt = `Foto ${photoIndex + 1} do carrossel`;
+            image.classList.remove("is-changing");
+        }, 250);
+    };
+
+    const scheduleNextMidnight = () => {
+        const { hour, minute, second } = getDateTime();
+        const secondsUntilMidnight = 86_400 - (hour * 3_600 + minute * 60 + second);
+        const delay = secondsUntilMidnight * 1_000 - new Date().getMilliseconds();
+
+        window.setTimeout(() => {
+            updatePhotoForToday();
+            scheduleNextMidnight();
+        }, delay);
+    };
+
+    updatePhotoForToday();
+    scheduleNextMidnight();
+};
+
 const loadHistory = async () => {
     const list = document.querySelector("#historico");
 
@@ -162,7 +226,10 @@ const setupEditor = async () => {
 };
 
 const page = document.body.dataset.page;
-if (page === "home") loadHome();
+if (page === "home") {
+    loadHome();
+    setupPhotoCarousel();
+}
 if (page === "history") loadHistory();
 if (page === "login") setupLogin();
 if (page === "edit") setupEditor();
