@@ -1,4 +1,4 @@
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +12,7 @@
     />
 
 </head>
-<body>
+<body data-page="history">
     <nav class="navbar">
         
             <a href="index.html">
@@ -29,23 +29,16 @@
 
     </nav>
 
-    <main class="container">
-
-        <div class="frases">
-
-            <p>13 de novembro de 2026</p>
-                <h1 id="frase" class="frase">Não consigo ficar um minuto sem pensar em você, sinto a sua falta todos os dias.</h1>
-                
-                <div class="linha-container">
-                    <hr>
-                    <div class="circulo">
-                        <img class="imagem" src="assets/eu-e-ela.jpeg" alt="">
-                    </div>
-                </div>
-                <h2 class="com-amor">com muito amor: Guilherme</h2>
-        </div>
-
+    <main class="container history-page">
+        <h1 class="page-title">Histórico</h1>
+        <section id="historico" class="history-list" aria-live="polite">
+            <p>Carregando histórico...</p>
+        </section>
+        <footer class="footer">
+            <a href="/senha.html">Adicionar frase</a>
+        </footer>
     </main>
 
+    <script src="/app.js" defer></script>
 </body>
 </html>

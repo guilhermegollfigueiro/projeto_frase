@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digite sua senha</title>
+    <link href="/style.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Karla:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+</head>
+<body data-page="login">
+    <nav class="navbar" aria-label="Navegação principal">
+        <a href="/index.html">Hoje</a>
+        <a href="/historico.html">Histórico</a>
+    </nav>
+
+    <main class="container">
+        <section class="frases form-card">
+            <h1 class="page-title">Digite a sua senha para prosseguir</h1>
+            <form id="login-form">
+                <label for="password">Senha</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+                <p id="form-message" class="form-message" role="alert" aria-live="polite"></p>
+                <button type="submit">Prosseguir</button>
+            </form>
+        </section>
+        <footer class="footer">
+            <a href="/index.html">Voltar para a frase do dia</a>
+        </footer>
+    </main>
+
+    <script src="/app.js" defer></script>
+</body>
+</html>

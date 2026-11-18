@@ -139,6 +139,117 @@ h2{
     top: 4.5%;
 }
 
+.footer {
+    margin: 24px 0;
+    text-align: center;
+    font-family: "Karla", ui-sans-serif, system-ui, sans-serif;
+}
+
+.footer a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.history-page {
+    gap: 20px;
+}
+
+.page-title {
+    margin: 0;
+    color: rgb(112, 94, 95);
+    font-family: "EB Garamond", ui-serif, Georgia, serif;
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    text-align: center;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+}
+
+.history-entry {
+    margin-top: 0;
+}
+
+.history-entry .frase {
+    margin: 12px 0;
+}
+
+.history-entry .com-amor {
+    margin: 0;
+}
+
+.form-card {
+    gap: 20px;
+}
+
+.form-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    font-family: "Karla", ui-sans-serif, system-ui, sans-serif;
+}
+
+.form-card label {
+    color: rgb(112, 94, 95);
+}
+
+.form-card input,
+.form-card textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgb(234, 211, 212);
+    border-radius: 12px;
+    background: #fff;
+    color: rgb(72, 58, 60);
+    font: inherit;
+}
+
+.form-card textarea {
+    resize: vertical;
+}
+
+.form-card button {
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 24px;
+    background: #786267;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.form-card button:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.form-card .secondary-button {
+    background: transparent;
+    color: rgb(112, 94, 95);
+    text-decoration: underline;
+}
+
+.form-message {
+    min-height: 1.2em;
+    margin: 0;
+}
+
+.form-message.error {
+    color: #a3293b;
+}
+
+.current-phrase {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
 @media (max-width: 480px) {
     body {
         padding: 80px 16px 24px;
@@ -164,5 +275,9 @@ h2{
         width: 68px;
         height: 68px;
         top: -30px;
+    }
+
+    .form-card {
+        gap: 16px;
     }
 }

@@ -1,0 +1,19 @@
+{
+  "name": "projeto-frase",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site de frases do dia com histórico persistente.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "pg": "^8.16.3"
+  }
+}
