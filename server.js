@@ -24,6 +24,20 @@ const pool = new Pool({
 const root = __dirname;
 const cookieName = "frase_auth";
 const sessionDurationSeconds = 8 * 60 * 60;
+const recoveredHistoricalPhrases = [
+    {
+        date: "2026-11-14",
+        text: "Queria poder te abraçar agora, saudades",
+    },
+    {
+        date: "2026-11-15",
+        text: "Obrigado por sempre ser essa pessoa especial na minha vida, um segundo com você é suficiente para deixar qualquer dia muito melhor do que o imaginável, saudades 🫶",
+    },
+    {
+        date: "2026-11-16",
+        text: "Nunca achei que era possível pensar tanto em alguém como tenho pensado em você, cada lebrança me faz muito mais alegre do que eu imaginava ser possível, cada momento olhando o seu lindo sorriso me faz uma pessoa infinitamente mais feliz",
+    },
+];
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -108,7 +122,11 @@ app.use("/assets", express.static(path.join(root, "assets"), { dotfiles: "deny",
 
 app.get("/api/phrases/current", async (_req, res) => {
     const result = await pool.query(
-        "SELECT id, phrase AS text, created_at AS \"createdAt\" FROM phrases ORDER BY id DESC LIMIT 1",
+        `SELECT id, phrase AS text, created_at AS "createdAt"
+         FROM phrases
+         WHERE is_historical = FALSE
+         ORDER BY id DESC
+         LIMIT 1`,
     );
     res.json({ phrase: result.rows[0] || null });
 });
@@ -117,8 +135,14 @@ app.get("/api/phrases/history", async (_req, res) => {
     const result = await pool.query(
         `SELECT id, phrase AS text, created_at AS "createdAt"
          FROM phrases
-         WHERE id < (SELECT COALESCE(MAX(id), 0) FROM phrases)
-         ORDER BY id DESC`,
+         WHERE id <> (
+             SELECT id
+             FROM phrases
+             WHERE is_historical = FALSE
+             ORDER BY id DESC
+             LIMIT 1
+         )
+         ORDER BY created_at DESC, id DESC`,
     );
     res.json({ phrases: result.rows });
 });
@@ -155,6 +179,37 @@ app.post("/api/phrases", requireSameOrigin, requireAuthentication, async (req, r
     res.status(201).json({ phrase: result.rows[0] });
 });
 
+app.post("/api/phrases/history", requireSameOrigin, requireAuthentication, async (req, res) => {
+    const text = typeof req.body?.text === "string" ? req.body.text.trim() : "";
+    const date = typeof req.body?.date === "string" ? req.body.date : "";
+    const dateParts = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date.split("-").map(Number) : [];
+    const parsedDate = dateParts.length === 3
+        ? new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]))
+        : null;
+    const validDate = dateParts.length === 3
+        && dateParts[0] >= 1000
+        && parsedDate.getUTCFullYear() === dateParts[0]
+        && parsedDate.getUTCMonth() === dateParts[1] - 1
+        && parsedDate.getUTCDate() === dateParts[2];
+
+    if (!text || text.length > 500) {
+        res.status(400).json({ error: "A frase precisa ter entre 1 e 500 caracteres." });
+        return;
+    }
+    if (!validDate) {
+        res.status(400).json({ error: "Informe uma data válida para a frase." });
+        return;
+    }
+
+    const result = await pool.query(
+        `INSERT INTO phrases (phrase, created_at, is_historical)
+         VALUES ($1, (($2::date + TIME '12:00') AT TIME ZONE 'America/Sao_Paulo'), TRUE)
+         RETURNING id, phrase AS text, created_at AS "createdAt"`,
+        [text, date],
+    );
+    res.status(201).json({ phrase: result.rows[0] });
+});
+
 app.post("/api/logout", requireSameOrigin, (req, res) => {
     const secure = req.secure ? "; Secure" : "";
     res.setHeader("Set-Cookie", `${cookieName}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`);
@@ -186,15 +241,32 @@ const initializeDatabase = async () => {
             CREATE TABLE IF NOT EXISTS phrases (
                 id BIGSERIAL PRIMARY KEY,
                 phrase TEXT NOT NULL CHECK (char_length(phrase) BETWEEN 1 AND 500),
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                is_historical BOOLEAN NOT NULL DEFAULT FALSE
             )
         `);
+        await client.query(
+            "ALTER TABLE phrases ADD COLUMN IF NOT EXISTS is_historical BOOLEAN NOT NULL DEFAULT FALSE",
+        );
         await client.query(
             `INSERT INTO phrases (phrase, created_at)
              SELECT $1, TIMESTAMPTZ '2026-11-13 12:00:00+00'
              WHERE NOT EXISTS (SELECT 1 FROM phrases)`,
             ["Não consigo ficar um minuto sem pensar em você, sinto a sua falta todos os dias."],
         );
+        for (const { date, text } of recoveredHistoricalPhrases) {
+            await client.query(
+                `INSERT INTO phrases (phrase, created_at, is_historical)
+                 SELECT $1, (($2::date + TIME '12:00') AT TIME ZONE 'America/Sao_Paulo'), TRUE
+                 WHERE NOT EXISTS (
+                     SELECT 1
+                     FROM phrases
+                     WHERE phrase = $1
+                       AND (created_at AT TIME ZONE 'America/Sao_Paulo')::date = $2::date
+                 )`,
+                [text, date],
+            );
+        }
         await client.query("COMMIT");
     } catch (error) {
         await client.query("ROLLBACK");

@@ -210,6 +210,27 @@ h2{
     font-family: "Karla", ui-sans-serif, system-ui, sans-serif;
 }
 
+.history-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    padding-top: 20px;
+    border-top: 1px solid rgb(234, 211, 212);
+}
+
+.history-form-section h2 {
+    margin: 0;
+    color: rgb(112, 94, 95);
+    font-family: "EB Garamond", ui-serif, Georgia, serif;
+    font-size: clamp(1.4rem, 4vw, 1.8rem);
+    text-align: center;
+}
+
+.history-form-section > p {
+    margin: 0;
+}
+
 .form-card label {
     color: rgb(112, 94, 95);
 }

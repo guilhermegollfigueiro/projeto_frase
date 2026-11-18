@@ -178,6 +178,8 @@ const setupEditor = async () => {
     const form = document.querySelector("#phrase-form");
     const message = document.querySelector("#form-message");
     const currentPhrase = document.querySelector("#current-phrase");
+    const historyForm = document.querySelector("#history-phrase-form");
+    const historyMessage = document.querySelector("#history-form-message");
 
     try {
         const current = await loadCurrentPhrase();
@@ -214,6 +216,40 @@ const setupEditor = async () => {
             setMessage(message, "Frase atualizada. A frase anterior foi salva no histórico.");
         } catch (error) {
             setMessage(message, error.message, true);
+        } finally {
+            button.disabled = false;
+        }
+    });
+
+    historyForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = historyForm.querySelector("button");
+        button.disabled = true;
+        setMessage(historyMessage, "");
+
+        try {
+            const response = await fetch("/api/phrases/history", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: historyForm.elements.phrase.value,
+                    date: historyForm.elements.date.value,
+                }),
+            });
+
+            if (response.status === 401) {
+                window.location.assign("/senha.html");
+                return;
+            }
+            if (!response.ok) {
+                const result = await response.json();
+                throw new Error(result.error || "Não foi possível adicionar a frase ao histórico.");
+            }
+
+            historyForm.reset();
+            setMessage(historyMessage, "Frase adicionada ao histórico com a data informada.");
+        } catch (error) {
+            setMessage(historyMessage, error.message, true);
         } finally {
             button.disabled = false;
         }

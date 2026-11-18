@@ -18,3 +18,7 @@ Site com histórico persistente em PostgreSQL. O servidor cria a tabela e a fras
 4. Não configure um disco SQLite local: a aplicação usa o PostgreSQL para preservar os dados entre implantações.
 
 A senha configurada em `ADMIN_PASSWORD` nunca é enviada ao navegador. O login é limitado a cinco tentativas a cada 15 minutos; a sessão de edição expira após oito horas.
+
+Na tela de edição, use “Adicionar frase antiga ao histórico” para registrar uma frase com sua data original sem alterar a frase atual. O histórico é ordenado pela data informada.
+
+As três frases recuperadas dos arquivos antigos (14, 15 e 16 de novembro de 2026) são importadas automaticamente no primeiro deploy com esta versão. A importação verifica texto e data para não duplicar frases já cadastradas.

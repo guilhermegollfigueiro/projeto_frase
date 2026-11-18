@@ -25,6 +25,18 @@
                 <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
                 <button type="submit">Salvar frase</button>
             </form>
+            <section class="history-form-section">
+                <h2>Adicionar frase antiga ao histórico</h2>
+                <p class="current-phrase">A frase será adicionada com a data informada e não substituirá a frase atual.</p>
+                <form id="history-phrase-form">
+                    <label for="history-date">Data da frase</label>
+                    <input id="history-date" name="date" type="date" required>
+                    <label for="history-phrase">Frase antiga</label>
+                    <textarea id="history-phrase" name="phrase" rows="4" maxlength="500" required></textarea>
+                    <p id="history-form-message" class="form-message" role="status" aria-live="polite"></p>
+                    <button type="submit">Adicionar ao histórico</button>
+                </form>
+            </section>
             <button id="logout-button" class="secondary-button" type="button">Sair</button>
         </section>
         <footer class="footer">
