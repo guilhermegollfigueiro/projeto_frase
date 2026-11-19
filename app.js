@@ -174,6 +174,41 @@ const setupLogin = () => {
     });
 };
 
+const setupSiteLogin = () => {
+    const form = document.querySelector("#site-login-form");
+    const message = document.querySelector("#site-login-message");
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = form.querySelector("button");
+        button.disabled = true;
+        setMessage(message, "");
+
+        try {
+            const response = await fetch("/api/site-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: form.elements.password.value }),
+            });
+
+            if (response.status === 401) {
+                setMessage(message, "Senha incorreta. Tente novamente.", true);
+                return;
+            }
+            if (!response.ok) {
+                const result = await response.json();
+                throw new Error(result.error || "Não foi possível verificar a senha.");
+            }
+
+            window.location.assign("/index.html");
+        } catch (error) {
+            setMessage(message, error.message, true);
+        } finally {
+            button.disabled = false;
+        }
+    });
+};
+
 const setupEditor = async () => {
     const form = document.querySelector("#phrase-form");
     const message = document.querySelector("#form-message");
@@ -268,4 +303,5 @@ if (page === "home") {
 }
 if (page === "history") loadHistory();
 if (page === "login") setupLogin();
+if (page === "site-login") setupSiteLogin();
 if (page === "edit") setupEditor();

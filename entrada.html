@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso ao site</title>
+    <link href="/style.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Karla:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+</head>
+<body data-page="site-login">
+    <main class="container">
+        <section class="frases form-card">
+            <h1 class="page-title">Digite a senha para entrar</h1>
+            <form id="site-login-form">
+                <label for="site-password">Senha</label>
+                <input id="site-password" name="password" type="password" autocomplete="current-password" required>
+                <p id="site-login-message" class="form-message" role="alert" aria-live="polite"></p>
+                <button type="submit">Entrar</button>
+            </form>
+        </section>
+    </main>
+    <script src="/app.js" defer></script>
+</body>
+</html>

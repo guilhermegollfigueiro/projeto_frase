@@ -6,7 +6,7 @@ const express = require("express");
 const { rateLimit } = require("express-rate-limit");
 const { Pool } = require("pg");
 
-const requiredEnvironment = ["DATABASE_URL", "ADMIN_PASSWORD", "SESSION_SECRET"];
+const requiredEnvironment = ["DATABASE_URL", "ADMIN_PASSWORD", "SITE_PASSWORD", "SESSION_SECRET"];
 for (const name of requiredEnvironment) {
     if (!process.env[name]) {
         throw new Error(`A variável de ambiente ${name} é obrigatória.`);
@@ -23,6 +23,7 @@ const pool = new Pool({
 });
 const root = __dirname;
 const cookieName = "frase_auth";
+const siteCookieName = "frase_site_access";
 const sessionDurationSeconds = 8 * 60 * 60;
 const recoveredHistoricalPhrases = [
     {
@@ -49,9 +50,9 @@ app.use((req, res, next) => {
     next();
 });
 
-const signSession = (expiresAt) => crypto
+const signSession = (expiresAt, purpose) => crypto
     .createHmac("sha256", process.env.SESSION_SECRET)
-    .update(String(expiresAt))
+    .update(`${purpose}:${expiresAt}`)
     .digest("base64url");
 
 const safeEqual = (left, right) => {
@@ -66,14 +67,17 @@ const getCookie = (req, name) => {
     return entry ? entry.trim().slice(name.length + 1) : "";
 };
 
-const isAuthenticated = (req) => {
-    const [expiresAt, signature, extra] = getCookie(req, cookieName).split(".");
+const isValidSession = (req, name, purpose) => {
+    const [expiresAt, signature, extra] = getCookie(req, name).split(".");
     if (extra !== undefined || !/^\d+$/.test(expiresAt || "") || !signature) {
         return false;
     }
     const expiration = Number(expiresAt);
-    return expiration > Date.now() && safeEqual(signature, signSession(expiresAt));
+    return expiration > Date.now() && safeEqual(signature, signSession(expiresAt, purpose));
 };
+
+const isAuthenticated = (req) => isValidSession(req, cookieName, "admin");
+const hasSiteAccess = (req) => isValidSession(req, siteCookieName, "site");
 
 const requireAuthentication = (req, res, next) => {
     if (!isAuthenticated(req)) {
@@ -81,6 +85,20 @@ const requireAuthentication = (req, res, next) => {
         return;
     }
     next();
+};
+
+const requireSiteAccess = (req, res, next) => {
+    if (hasSiteAccess(req)) {
+        next();
+        return;
+    }
+
+    if (req.path.startsWith("/api/")) {
+        res.status(401).json({ error: "Digite a senha do site para prosseguir." });
+        return;
+    }
+
+    res.redirect(303, "/entrada.html");
 };
 
 const requireSameOrigin = (req, res, next) => {
@@ -104,7 +122,37 @@ const loginLimiter = rateLimit({
     message: { error: "Muitas tentativas. Aguarde 15 minutos e tente novamente." },
 });
 
+const siteLoginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: "Muitas tentativas. Aguarde 15 minutos e tente novamente." },
+});
+
 const sendPage = (file) => (_req, res) => res.sendFile(path.join(root, file));
+
+app.get("/entrada.html", sendPage("entrada.html"));
+app.get("/style.css", sendPage("style.css"));
+app.get("/app.js", sendPage("app.js"));
+
+app.post("/api/site-login", requireSameOrigin, siteLoginLimiter, (req, res) => {
+    const password = typeof req.body?.password === "string" ? req.body.password : "";
+    if (!safeEqual(password, process.env.SITE_PASSWORD)) {
+        res.status(401).json({ error: "Senha incorreta." });
+        return;
+    }
+
+    const expiresAt = Date.now() + sessionDurationSeconds * 1000;
+    const secure = req.secure ? "; Secure" : "";
+    res.setHeader(
+        "Set-Cookie",
+        `${siteCookieName}=${expiresAt}.${signSession(expiresAt, "site")}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${sessionDurationSeconds}${secure}`,
+    );
+    res.json({ authenticated: true });
+});
+
+app.use(requireSiteAccess);
 
 app.get(["/", "/index.html"], sendPage("index.html"));
 app.get("/historico.html", sendPage("historico.html"));
@@ -116,8 +164,6 @@ app.get("/editar.html", (req, res, next) => {
     }
     next();
 }, sendPage("editar.html"));
-app.get("/style.css", sendPage("style.css"));
-app.get("/app.js", sendPage("app.js"));
 app.use("/assets", express.static(path.join(root, "assets"), { dotfiles: "deny", index: false }));
 
 app.get("/api/phrases/current", async (_req, res) => {
@@ -158,7 +204,7 @@ app.post("/api/login", requireSameOrigin, loginLimiter, (req, res) => {
     const secure = req.secure ? "; Secure" : "";
     res.setHeader(
         "Set-Cookie",
-        `${cookieName}=${expiresAt}.${signSession(expiresAt)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${sessionDurationSeconds}${secure}`,
+        `${cookieName}=${expiresAt}.${signSession(expiresAt, "admin")}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${sessionDurationSeconds}${secure}`,
     );
     res.json({ authenticated: true });
 });
